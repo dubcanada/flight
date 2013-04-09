@@ -12,7 +12,7 @@ include __DIR__.'/core/Dispatcher.php';
 /**
  * The Flight class represents the framework itself. It is responsible
  * loading an HTTP request, running the assigned services, and generating
- * an HTTP response. 
+ * an HTTP response.
  */
 class Flight {
     /**
@@ -54,7 +54,7 @@ class Flight {
             return self::$dispatcher->run($name, $params);
         }
 
-        $shared = (!empty($params)) ? (bool)$params[0] : true; 
+        $shared = (!empty($params)) ? (bool)$params[0] : true;
 
         return self::$loader->load($name, $shared);
     }
@@ -65,12 +65,6 @@ class Flight {
      * Initializes the framework.
      */
     public static function init() {
-        // Handle errors internally
-        set_error_handler(array(__CLASS__, 'handleError'));
-
-        // Handle exceptions internally
-        set_exception_handler(array(__CLASS__, 'handleException'));
-
         // Load core components
         if (self::$loader == null) {
             self::$loader = new \flight\core\Loader();
@@ -100,7 +94,7 @@ class Flight {
 
         // Register framework methods
         $methods = array(
-            'start','stop','route','halt','error','notFound',
+            'start','stop','route','halt','notFound',
             'render','redirect','etag','lastModified','json'
         );
         foreach ($methods as $name) {
@@ -109,38 +103,10 @@ class Flight {
 
         // Default settings
         self::set('flight.views.path', './views');
-        self::set('flight.log_errors', false);
 
         // Enable output buffering
         ob_start();
     }
-
-    /**
-     * Custom error handler. Converts errors into exceptions.
-     *
-     * @param int $errno Error number
-     * @param int $errstr Error string
-     * @param int $errfile Error file name
-     * @param int $errline Error file line number
-     */
-    public static function handleError($errno, $errstr, $errfile, $errline) {
-        if ($errno & error_reporting()) {
-            static::handleException(new ErrorException($errstr, $errno, 0, $errfile, $errline));
-        }
-    }
-
-    /**
-     * Custom exception handler. Logs exceptions.
-     *
-     * @param Exception $e Thrown exception
-     */
-    public static function handleException(Exception $e) {
-        if (self::get('flight.log_errors')) {
-            error_log($e->getMessage());
-        }
-        static::error($e);
-    }
-
     /**
      * Maps a callback to a framework method.
      *
@@ -309,31 +275,6 @@ class Flight {
     }
 
     /**
-     * Sends an HTTP 500 response for any errors.
-     *
-     * @param \Exception Thrown exception
-     */
-    public static function _error(Exception $e) {
-        $msg = sprintf('<h1>500 Internal Server Error</h1>'.
-            '<h3>%s (%s)</h3>'.
-            '<pre>%s</pre>',
-            $e->getMessage(),
-            $e->getCode(),
-            $e->getTraceAsString()
-        ); 
-
-        try {
-            self::response(false)
-                ->status(500)
-                ->write($msg)
-                ->send();
-        }
-        catch (Exception $ex) {
-            exit($msg);
-        }
-    }
-
-    /**
      * Sends an HTTP 404 response when a URL is not found.
      */
     public static function _notFound() {
@@ -415,7 +356,7 @@ class Flight {
         $id = (($type === 'weak') ? 'W/' : '').$id;
 
         self::response()->header('ETag', $id);
-        
+
         if ($id === getenv('HTTP_IF_NONE_MATCH')) {
             self::halt(304);
         }
