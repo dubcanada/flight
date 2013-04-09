@@ -74,6 +74,9 @@ class Flight
         // Handle exceptions internally
         set_exception_handler(array(__CLASS__, 'handleException'));
 
+        // Handle shutdown
+        register_shutdown_function(array(__CLASS__, 'handleError'));
+
         // Load core components
         if (self::$loader == null) {
             self::$loader = new \flight\core\Loader();
@@ -117,15 +120,21 @@ class Flight
 
     /**
      * Custom error handler. Converts errors into exceptions.
-     *
-     * @param int $errno Error number
-     * @param int $errstr Error string
-     * @param int $errfile Error file name
-     * @param int $errline Error file line number
      */
-    public static function handleError($errno, $errstr, $errfile, $errline) {
-        if ($errno & error_reporting()) {
-            static::handleException(new ErrorException($errstr, $errno, 0, $errfile, $errline));
+    public static function handleError() {
+        if (null === $lastError = error_get_last()) {
+            return;
+        }
+
+        $errors = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, E_STRICT);
+
+        if (in_array($lastError['type'], $errors)) {
+            static::handleException(
+                new ErrorException(
+                    @$lastError['message'], @$lastError['type'], @$lastError['type'],
+                    @$lastError['file'], @$lastError['line']
+                );
+            );
         }
     }
 
