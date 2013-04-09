@@ -133,7 +133,7 @@ class Flight
                 new ErrorException(
                     @$lastError['message'], @$lastError['type'], @$lastError['type'],
                     @$lastError['file'], @$lastError['line']
-                );
+                )
             );
         }
     }
