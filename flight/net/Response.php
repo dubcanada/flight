@@ -13,7 +13,8 @@ namespace flight\net;
  * contains the response headers, HTTP status code, and response
  * body.
  */
-class Response {
+class Response
+{
     protected $headers = array();
     protected $status = 200;
     protected $body;
@@ -68,7 +69,8 @@ class Response {
      * @return object Self reference
      * @throws \Exception If invalid status code
      */
-    public function status($code) {
+    public function status($code)
+    {
         if (array_key_exists($code, self::$codes)) {
             if (strpos(php_sapi_name(), 'cgi') !== false) {
                 header(
@@ -79,8 +81,7 @@ class Response {
                     ),
                     true
                 );
-            }
-            else {
+            } else {
                 header(
                     sprintf(
                         '%s %d %s',
@@ -91,8 +92,7 @@ class Response {
                     $code
                 );
             }
-        }
-        else {
+        } else {
             throw new \Exception('Invalid status code.');
         }
 
@@ -106,13 +106,13 @@ class Response {
      * @param string $value Header value
      * @return object Self reference
      */
-    public function header($name, $value = null) {
+    public function header($name, $value = null)
+    {
         if (is_array($name)) {
             foreach ($name as $k => $v) {
                 $this->headers[$k] = $v;
             }
-        }
-        else {
+        } else {
             $this->headers[$name] = $value;
         }
 
@@ -125,7 +125,8 @@ class Response {
      * @param string $str Response content
      * @return object Self reference
      */
-    public function write($str) {
+    public function write($str)
+    {
         $this->body .= $str;
 
         return $this;
@@ -136,7 +137,8 @@ class Response {
      *
      * @return object Self reference
      */
-    public function clear() {
+    public function clear()
+    {
         $this->headers = array();
         $this->status = 200;
         $this->body = '';
@@ -150,7 +152,8 @@ class Response {
      * @param int|string $expires Expiration time
      * @return object Self reference
      */
-    public function cache($expires) {
+    public function cache($expires)
+    {
         if ($expires === false) {
             $this->headers['Expires'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
             $this->headers['Cache-Control'] = array(
@@ -159,8 +162,7 @@ class Response {
                 'max-age=0'
             );
             $this->headers['Pragma'] = 'no-cache';
-        }
-        else {
+        } else {
             $expires = is_int($expires) ? $expires : strtotime($expires);
             $this->headers['Expires'] = gmdate('D, d M Y H:i:s', $expires) . ' GMT';
             $this->headers['Cache-Control'] = 'max-age='.($expires - time());
@@ -172,7 +174,8 @@ class Response {
     /**
      * Sends the response and exits the program.
      */
-    public function send() {
+    public function send()
+    {
         if (ob_get_length() > 0) {
             ob_end_clean();
         }
@@ -183,8 +186,7 @@ class Response {
                     foreach ($value as $v) {
                         header($field.': '.$v, false);
                     }
-                }
-                else {
+                } else {
                     header($field.': '.$value);
                 }
             }

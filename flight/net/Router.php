@@ -11,9 +11,10 @@ namespace flight\net;
 /**
  * The Router class is responsible for routing an HTTP request to
  * an assigned callback function. The Router tries to match the
- * requested URL against a series of URL patterns. 
+ * requested URL against a series of URL patterns.
  */
-class Router {
+class Router
+{
     /**
      * Mapped routes.
      *
@@ -64,7 +65,8 @@ class Router {
      * @param string $pattern URL pattern to match
      * @param callback $callback Callback function
      */
-    public function map($pattern, $callback) {
+    public function map($pattern, $callback)
+    {
         if (strpos($pattern, ' ') !== false) {
             list($method, $url) = explode(' ', trim($pattern), 2);
 
@@ -84,7 +86,8 @@ class Router {
      * @param string $url Requested URL
      * @return boolean Match status
      */
-    public function match($pattern, $url) {
+    public function match($pattern, $url)
+    {
         $ids = array();
         $char = substr($pattern, -1);
         $pattern = str_replace(')', ')?', $pattern);
@@ -105,13 +108,9 @@ class Router {
         // Fix trailing slash
         if ($char === '/') {
             $regex .= '?';
-        }
-        // Replace wildcard
-        else if ($char === '*') {
+        } else if ($char === '*') { // replace wildcard
             $regex = str_replace('*', '.+?', $pattern);
-        }
-        // Allow trailing slash
-        else {
+        } else { // allow trailing slash
             $regex .= '/?';
         }
 
@@ -136,7 +135,8 @@ class Router {
      * @param Request $request Request object
      * @return callable|boolean Matched callback function or false if not found
      */
-    public function route(Request $request) {
+    public function route(Request $request)
+    {
         $this->matched = null;
         $this->regex = null;
         $this->params = array();
