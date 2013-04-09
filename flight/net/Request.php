@@ -8,8 +8,6 @@
 
 namespace flight\net;
 
-use flight\util\Collection;
-
 /**
  * The Request class represents an HTTP request. Data from
  * all the super globals $_GET, $_POST, $_COOKIE, and $_FILES
@@ -54,10 +52,6 @@ class Request {
                 'body' => file_get_contents('php://input'),
                 'type' => getenv('CONTENT_TYPE') ?: '',
                 'length' => getenv('CONTENT_LENGTH') ?: 0,
-                'query' => new Collection($_GET),
-                'data' => new Collection($_POST),
-                'cookies' => new Collection($_COOKIE),
-                'files' => new Collection($_FILES),
                 'secure' => getenv('HTTPS') && getenv('HTTPS') != 'off',
                 'accept' => getenv('HTTP_ACCEPT') ?: '',
                 'proxy_ip' => $this->getProxyIpAddress()
