@@ -68,6 +68,12 @@ class Flight
      */
     public static function init()
     {
+        // Handle errors internally
+        set_error_handler(array(__CLASS__, 'handleError'));
+
+        // Handle exceptions internally
+        set_exception_handler(array(__CLASS__, 'handleException'));
+
         // Load core components
         if (self::$loader == null) {
             self::$loader = new \flight\core\Loader();
@@ -95,16 +101,46 @@ class Flight
 
         // Register framework methods
         $methods = array(
-            'start','stop','route','halt','notFound',
+            'start','stop','route','halt','error','notFound',
             'render','redirect','etag','lastModified','json'
         );
         foreach ($methods as $name) {
             self::$dispatcher->set($name, array(__CLASS__, '_'.$name));
         }
 
+        // Default settings
+        self::set('flight.log_errors', false);
+
         // Enable output buffering
         ob_start();
     }
+
+    /**
+     * Custom error handler. Converts errors into exceptions.
+     *
+     * @param int $errno Error number
+     * @param int $errstr Error string
+     * @param int $errfile Error file name
+     * @param int $errline Error file line number
+     */
+    public static function handleError($errno, $errstr, $errfile, $errline) {
+        if ($errno & error_reporting()) {
+            static::handleException(new ErrorException($errstr, $errno, 0, $errfile, $errline));
+        }
+    }
+
+    /**
+     * Custom exception handler. Logs exceptions.
+     *
+     * @param Exception $e Thrown exception
+     */
+    public static function handleException(Exception $e) {
+        if (self::get('flight.log_errors')) {
+            error_log($e->getMessage());
+        }
+        static::error($e);
+    }
+
     /**
      * Maps a callback to a framework method.
      *
@@ -279,6 +315,31 @@ class Flight
             ->write($message)
             ->cache(false)
             ->send();
+    }
+
+    /**
+     * Sends an HTTP 500 response for any errors.
+     *
+     * @param \Exception Thrown exception
+     */
+    public static function _error(Exception $e) {
+        $msg = sprintf('<h1>500 Internal Server Error</h1>'.
+            '<h3>%s (%s)</h3>'.
+            '<pre>%s</pre>',
+            $e->getMessage(),
+            $e->getCode(),
+            $e->getTraceAsString()
+        );
+
+        try {
+            self::response(false)
+                ->status(500)
+                ->write($msg)
+                ->send();
+        }
+        catch (Exception $ex) {
+            exit($msg);
+        }
     }
 
     /**
