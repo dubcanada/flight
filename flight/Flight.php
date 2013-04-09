@@ -101,9 +101,6 @@ class Flight {
             self::$dispatcher->set($name, array(__CLASS__, '_'.$name));
         }
 
-        // Default settings
-        self::set('flight.views.path', './views');
-
         // Enable output buffering
         ob_start();
     }
